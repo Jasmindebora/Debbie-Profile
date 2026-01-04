@@ -287,6 +287,299 @@ class BackendTester:
         except Exception as e:
             self.log_test("Database Storage Verification", False, f"Request failed: {str(e)}")
     
+    def test_cdss_predict_high_risk_patient(self):
+        """Test POST /api/cdss/predict with high-risk patient data"""
+        high_risk_patient = {
+            "age": 75,
+            "gender": "Male",
+            "heart_rate": 125,
+            "systolic_bp": 85,
+            "diastolic_bp": 55,
+            "respiratory_rate": 28,
+            "spo2": 88,
+            "temperature": 101.5,
+            "gcs_score": 12,
+            "wbc_count": 18.5,
+            "hemoglobin": 9.2,
+            "platelet_count": 120,
+            "creatinine": 2.8,
+            "sodium": 132,
+            "potassium": 5.8,
+            "glucose": 280,
+            "lactate": 5.2,
+            "chest_pain": 1,
+            "dyspnea": 1,
+            "altered_consciousness": 1,
+            "seizure": 0,
+            "abdominal_pain": 0,
+            "trauma": 0,
+            "diabetes": 1,
+            "hypertension": 1,
+            "cad": 1,
+            "copd": 1,
+            "ckd": 1,
+            "stroke_history": 0,
+            "triage_category": 1
+        }
+        
+        try:
+            response = requests.post(
+                f"{API_BASE_URL}/cdss/predict",
+                json=high_risk_patient,
+                headers={"Content-Type": "application/json"},
+                timeout=30
+            )
+            
+            if response.status_code == 201:
+                data = response.json()
+                expected_keys = ["patient_id", "timestamp", "predictions", "overall_risk_score", "recommendations"]
+                
+                if all(key in data for key in expected_keys):
+                    predictions = data.get("predictions", {})
+                    expected_outcomes = ["icu_admission", "intubation", "cardiac_arrest", "inotropic_usage"]
+                    
+                    # Check all 4 outcomes are present
+                    if all(outcome in predictions for outcome in expected_outcomes):
+                        # Validate prediction structure
+                        valid_predictions = True
+                        for outcome, prediction in predictions.items():
+                            if not all(key in prediction for key in ["outcome_name", "prediction", "probability", "risk_level"]):
+                                valid_predictions = False
+                                break
+                            
+                            # Check probability is between 0 and 1
+                            prob = prediction.get("probability", -1)
+                            if not (0 <= prob <= 1):
+                                valid_predictions = False
+                                break
+                            
+                            # Check risk level is valid
+                            risk_level = prediction.get("risk_level", "")
+                            if risk_level not in ["Low", "Moderate", "High", "Critical"]:
+                                valid_predictions = False
+                                break
+                        
+                        if valid_predictions:
+                            overall_risk = data.get("overall_risk_score", -1)
+                            recommendations = data.get("recommendations", [])
+                            
+                            if 0 <= overall_risk <= 1 and isinstance(recommendations, list) and len(recommendations) > 0:
+                                self.log_test("CDSS High-Risk Patient Prediction", True, 
+                                            f"All 4 outcomes predicted, Overall risk: {overall_risk:.3f}, Recommendations: {len(recommendations)}")
+                                return data.get("patient_id")
+                            else:
+                                self.log_test("CDSS High-Risk Patient Prediction", False, 
+                                            f"Invalid overall risk score ({overall_risk}) or empty recommendations")
+                        else:
+                            self.log_test("CDSS High-Risk Patient Prediction", False, "Invalid prediction structure or values")
+                    else:
+                        missing_outcomes = [o for o in expected_outcomes if o not in predictions]
+                        self.log_test("CDSS High-Risk Patient Prediction", False, f"Missing outcomes: {missing_outcomes}")
+                else:
+                    self.log_test("CDSS High-Risk Patient Prediction", False, f"Missing expected keys. Got: {list(data.keys())}")
+            else:
+                self.log_test("CDSS High-Risk Patient Prediction", False, f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_test("CDSS High-Risk Patient Prediction", False, f"Request failed: {str(e)}")
+        
+        return None
+    
+    def test_cdss_predict_low_risk_patient(self):
+        """Test POST /api/cdss/predict with low-risk patient data"""
+        low_risk_patient = {
+            "age": 35,
+            "gender": "Female",
+            "heart_rate": 80,
+            "systolic_bp": 120,
+            "diastolic_bp": 80,
+            "respiratory_rate": 16,
+            "spo2": 98,
+            "temperature": 98.6,
+            "gcs_score": 15,
+            "wbc_count": 7.5,
+            "hemoglobin": 13.5,
+            "platelet_count": 250,
+            "creatinine": 0.9,
+            "sodium": 140,
+            "potassium": 4.0,
+            "glucose": 95,
+            "lactate": 1.2,
+            "chest_pain": 0,
+            "dyspnea": 0,
+            "altered_consciousness": 0,
+            "seizure": 0,
+            "abdominal_pain": 1,
+            "trauma": 0,
+            "diabetes": 0,
+            "hypertension": 0,
+            "cad": 0,
+            "copd": 0,
+            "ckd": 0,
+            "stroke_history": 0,
+            "triage_category": 4
+        }
+        
+        try:
+            response = requests.post(
+                f"{API_BASE_URL}/cdss/predict",
+                json=low_risk_patient,
+                headers={"Content-Type": "application/json"},
+                timeout=30
+            )
+            
+            if response.status_code == 201:
+                data = response.json()
+                predictions = data.get("predictions", {})
+                overall_risk = data.get("overall_risk_score", -1)
+                
+                # For low-risk patient, expect lower overall risk score
+                if 0 <= overall_risk <= 1:
+                    self.log_test("CDSS Low-Risk Patient Prediction", True, 
+                                f"Low-risk patient processed, Overall risk: {overall_risk:.3f}")
+                else:
+                    self.log_test("CDSS Low-Risk Patient Prediction", False, 
+                                f"Invalid overall risk score: {overall_risk}")
+            else:
+                self.log_test("CDSS Low-Risk Patient Prediction", False, f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_test("CDSS Low-Risk Patient Prediction", False, f"Request failed: {str(e)}")
+    
+    def test_cdss_predict_invalid_data(self):
+        """Test POST /api/cdss/predict with invalid patient data"""
+        invalid_patient = {
+            "age": -5,  # Invalid age
+            "gender": "Unknown",  # Invalid gender
+            "heart_rate": 300,  # Invalid heart rate
+            "systolic_bp": 50,  # Invalid BP
+            "diastolic_bp": 200,  # Invalid BP
+            "respiratory_rate": 0,  # Invalid RR
+            "spo2": 150,  # Invalid SpO2
+            "temperature": 50,  # Invalid temperature
+            "gcs_score": 20,  # Invalid GCS
+            # Missing required fields
+        }
+        
+        try:
+            response = requests.post(
+                f"{API_BASE_URL}/cdss/predict",
+                json=invalid_patient,
+                headers={"Content-Type": "application/json"},
+                timeout=10
+            )
+            
+            if response.status_code == 422:
+                self.log_test("CDSS Invalid Patient Data", True, "Validation error returned as expected")
+            else:
+                self.log_test("CDSS Invalid Patient Data", False, f"Expected 422, got {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("CDSS Invalid Patient Data", False, f"Request failed: {str(e)}")
+    
+    def test_cdss_model_performance(self):
+        """Test GET /api/cdss/models/performance"""
+        try:
+            response = requests.get(f"{API_BASE_URL}/cdss/models/performance", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                if "performance" in data and isinstance(data["performance"], list):
+                    performance_data = data["performance"]
+                    
+                    if len(performance_data) > 0:
+                        # Check structure of performance data
+                        valid_performance = True
+                        expected_metrics = ["accuracy", "precision", "recall", "f1_score", "roc_auc"]
+                        
+                        for model_perf in performance_data:
+                            if not all(metric in model_perf for metric in expected_metrics):
+                                valid_performance = False
+                                break
+                            
+                            # Check metric values are reasonable (0-1 range)
+                            for metric in expected_metrics:
+                                value = model_perf.get(metric, -1)
+                                if not (0 <= value <= 1):
+                                    valid_performance = False
+                                    break
+                        
+                        if valid_performance:
+                            self.log_test("CDSS Model Performance", True, 
+                                        f"Retrieved performance for {len(performance_data)} models")
+                        else:
+                            self.log_test("CDSS Model Performance", False, "Invalid performance metrics structure or values")
+                    else:
+                        self.log_test("CDSS Model Performance", False, "No performance data returned")
+                else:
+                    self.log_test("CDSS Model Performance", False, f"Invalid response structure. Got: {list(data.keys())}")
+            else:
+                self.log_test("CDSS Model Performance", False, f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_test("CDSS Model Performance", False, f"Request failed: {str(e)}")
+    
+    def test_cdss_statistics(self):
+        """Test GET /api/cdss/statistics"""
+        try:
+            response = requests.get(f"{API_BASE_URL}/cdss/statistics", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                expected_keys = ["total_predictions", "predictions_last_24h", "high_risk_predictions", "models_active"]
+                
+                if all(key in data for key in expected_keys):
+                    # Check all values are non-negative integers
+                    valid_stats = True
+                    for key in expected_keys:
+                        value = data.get(key, -1)
+                        if not isinstance(value, int) or value < 0:
+                            valid_stats = False
+                            break
+                    
+                    if valid_stats:
+                        self.log_test("CDSS Statistics", True, 
+                                    f"Total: {data['total_predictions']}, Last 24h: {data['predictions_last_24h']}, "
+                                    f"High-risk: {data['high_risk_predictions']}, Models: {data['models_active']}")
+                    else:
+                        self.log_test("CDSS Statistics", False, "Invalid statistics values")
+                else:
+                    self.log_test("CDSS Statistics", False, f"Missing expected keys. Got: {list(data.keys())}")
+            else:
+                self.log_test("CDSS Statistics", False, f"HTTP {response.status_code}: {response.text}")
+                
+        except Exception as e:
+            self.log_test("CDSS Statistics", False, f"Request failed: {str(e)}")
+    
+    def verify_cdss_database_storage(self, patient_id):
+        """Verify CDSS prediction is stored in MongoDB by checking statistics"""
+        if not patient_id:
+            self.log_test("CDSS Database Storage Verification", False, "No patient ID to verify")
+            return
+        
+        try:
+            # Check if statistics show increased prediction count
+            response = requests.get(f"{API_BASE_URL}/cdss/statistics", timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                total_predictions = data.get("total_predictions", 0)
+                
+                if total_predictions > 0:
+                    self.log_test("CDSS Database Storage Verification", True, 
+                                f"CDSS predictions stored in database. Total: {total_predictions}")
+                else:
+                    self.log_test("CDSS Database Storage Verification", False, 
+                                "No predictions found in database")
+            else:
+                self.log_test("CDSS Database Storage Verification", False, 
+                            f"Failed to retrieve statistics: HTTP {response.status_code}")
+                
+        except Exception as e:
+            self.log_test("CDSS Database Storage Verification", False, f"Request failed: {str(e)}")
+    
+    
     def run_all_tests(self):
         """Run all backend API tests"""
         print("=" * 60)
