@@ -86,15 +86,15 @@ def generate_synthetic_ed_data(n_samples=10000, seed=42):
     
     # In-Hospital Cardiac Arrest
     cardiac_arrest_risk = (
-        (df['age'] > 70).astype(int) * 0.10 +
-        (df['systolic_bp'] < 80).astype(int) * 0.20 +
-        (df['heart_rate'] > 130).astype(int) * 0.15 +
-        (df['potassium'] > 6).astype(int) * 0.20 +
-        (df['lactate'] > 6).astype(int) * 0.20 +
-        df['cad'] * 0.10 +
-        (df['gcs_score'] < 8).astype(int) * 0.15
+        (df['age'] > 65).astype(int) * 0.12 +
+        (df['systolic_bp'] < 90).astype(int) * 0.18 +
+        (df['heart_rate'] > 120).astype(int) * 0.15 +
+        (df['potassium'] > 5.5).astype(int) * 0.18 +
+        (df['lactate'] > 4).astype(int) * 0.18 +
+        df['cad'] * 0.12 +
+        (df['gcs_score'] < 10).astype(int) * 0.15
     )
-    df['cardiac_arrest'] = (cardiac_arrest_risk + np.random.normal(0, 0.08, n_samples) > 0.6).astype(int)
+    df['cardiac_arrest'] = (cardiac_arrest_risk + np.random.normal(0, 0.12, n_samples) > 0.45).astype(int)
     
     # Inotropic Usage
     inotropic_risk = (
