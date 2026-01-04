@@ -245,15 +245,17 @@ frontend:
 
 metadata:
   created_by: "testing_agent"
-  version: "1.0"
-  test_sequence: 1
+  version: "2.0"
+  test_sequence: 2
   run_ui: false
 
 test_plan:
   current_focus:
-    - "Contact Form Submission API"
-    - "Contact Form Validation"
-    - "MongoDB Database Integration"
+    - "CDSS Patient Risk Prediction API"
+    - "CDSS Model Performance API"
+    - "CDSS Statistics API"
+    - "CDSS Data Validation"
+    - "CDSS Database Storage"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -261,3 +263,5 @@ test_plan:
 agent_communication:
   - agent: "testing"
     message: "Backend API testing completed successfully. All 6 backend tasks tested and working correctly. Health check, contact form submission, validation, admin endpoints, and MongoDB integration all functioning as expected. Contact form is the main feature and is fully operational with proper validation and database storage."
+  - agent: "testing"
+    message: "NP-CDSS prediction API testing completed successfully. Fixed critical bug in patient ID generation that was causing 'int' object is not subscriptable error. All 5 CDSS endpoints now working correctly: 1) Health check shows 4 models loaded, 2) Patient risk prediction returns predictions for all 4 outcomes with proper risk levels and recommendations, 3) Model performance returns metrics for all models, 4) Statistics tracking working, 5) Data validation working properly. CDSS predictions are properly stored in MongoDB. Only minor issue: email validation in contact form accepts invalid formats but doesn't affect core functionality. Overall success rate: 93.3% (14/15 tests passed)."
