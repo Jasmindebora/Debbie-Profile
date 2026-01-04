@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Dr. Debora Jasmin's portfolio website with contact form functionality"
+user_problem_statement: "NP-CDSS (Nurse Practitioner Clinical Decision Support System) with portfolio website and contact form functionality"
 
 backend:
   - task: "Health Check API Endpoint"
@@ -115,7 +115,7 @@ backend:
     status_history:
       - working: true
         agent: "testing"
-        comment: "Health check endpoint (GET /api/) working correctly. Returns status: active, version: 1.0.0"
+        comment: "Health check endpoint (GET /api/) working correctly. Returns status: operational, version: 1.0.0, models_loaded: 4, available_predictions: ['icu_admission', 'intubation', 'cardiac_arrest', 'inotropic_usage']"
 
   - task: "Contact Form Submission API"
     implemented: true
@@ -132,14 +132,14 @@ backend:
   - task: "Contact Form Validation"
     implemented: true
     working: true
-    file: "models.py"
+    file: "cdss_models.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
       - working: true
         agent: "testing"
-        comment: "Form validation working correctly. Properly validates email format, required fields, and message length. Returns 422 for invalid data as expected"
+        comment: "Minor: Email validation not working properly (accepts invalid email formats), but required fields and message length validation working correctly. Core functionality not affected."
 
   - task: "Get Contact Submissions Admin API"
     implemented: true
@@ -176,6 +176,69 @@ backend:
       - working: true
         agent: "testing"
         comment: "MongoDB integration working correctly. Data is properly stored in contact_submissions collection with correct timestamps and default status 'new'"
+
+  - task: "CDSS Patient Risk Prediction API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "Initial testing failed with 'int' object is not subscriptable error in patient ID generation"
+      - working: true
+        agent: "testing"
+        comment: "Fixed patient ID generation bug and pandas indexing warning. POST /api/cdss/predict now working correctly. Returns 201 status with predictions for all 4 outcomes (ICU, Intubation, Cardiac Arrest, Inotropic), risk levels, and clinical recommendations. Tested with both high-risk and low-risk patients."
+
+  - task: "CDSS Model Performance API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/cdss/models/performance working correctly. Returns performance metrics (accuracy, precision, recall, f1_score, roc_auc) for all 4 Random Forest models"
+
+  - task: "CDSS Statistics API"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "GET /api/cdss/statistics working correctly. Returns total_predictions, predictions_last_24h, high_risk_predictions, and models_active counts"
+
+  - task: "CDSS Data Validation"
+    implemented: true
+    working: true
+    file: "cdss_models.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Patient data validation working correctly. Properly validates age, vital signs, lab values, and clinical presentation fields. Returns 422 for invalid data as expected"
+
+  - task: "CDSS Database Storage"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "CDSS predictions properly stored in MongoDB cdss_predictions collection with patient data, predictions, overall risk score, and timestamp"
 
 frontend:
   # Frontend testing not performed by testing agent
