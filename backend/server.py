@@ -234,7 +234,7 @@ async def predict_patient_outcomes(patient: PatientData):
         await db.cdss_predictions.insert_one(prediction_record)
         
         return CDSSPredictionResponse(
-            patient_id=f"PT{str(abs(hash(str(patient.dict())))[:8])}",
+            patient_id=f"PT{str(abs(hash(str(patient.dict()))))[:8]}",
             timestamp=datetime.utcnow(),
             predictions=predictions,
             overall_risk_score=overall_risk_score,
