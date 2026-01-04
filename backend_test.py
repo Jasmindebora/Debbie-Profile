@@ -66,13 +66,15 @@ class BackendTester:
             
             if response.status_code == 200:
                 data = response.json()
-                expected_keys = ["message", "status", "version"]
+                expected_keys = ["message", "status", "version", "models_loaded", "available_predictions"]
                 
                 if all(key in data for key in expected_keys):
-                    if data.get("status") == "active":
-                        self.log_test("Health Check", True, f"Status: {data.get('status')}, Version: {data.get('version')}")
+                    if data.get("status") == "operational":
+                        models_loaded = data.get("models_loaded", 0)
+                        available_predictions = data.get("available_predictions", [])
+                        self.log_test("Health Check", True, f"Status: {data.get('status')}, Version: {data.get('version')}, Models: {models_loaded}, Predictions: {available_predictions}")
                     else:
-                        self.log_test("Health Check", False, f"Status not active: {data.get('status')}")
+                        self.log_test("Health Check", False, f"Status not operational: {data.get('status')}")
                 else:
                     self.log_test("Health Check", False, f"Missing expected keys. Got: {list(data.keys())}")
             else:
