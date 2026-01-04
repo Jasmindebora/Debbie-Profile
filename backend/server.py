@@ -205,7 +205,7 @@ async def predict_patient_outcomes(patient: PatientData):
                 for i, feature in enumerate(features):
                     feature_importance.append({
                         'feature': feature,
-                        'value': float(X.iloc[0][i]),
+                        'value': float(X.iloc[0, i]),
                         'importance': float(importances[i])
                     })
                 feature_importance.sort(key=lambda x: x['importance'], reverse=True)
