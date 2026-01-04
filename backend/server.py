@@ -118,11 +118,10 @@ async def get_contact_submissions(
             query["status"] = status_filter
         
         # Fetch submissions
-        submissions = await db.contact_submissions.find(query) \
-            .sort("timestamp", -1) \
-            .skip(skip) \
-            .limit(limit) \
-            .to_list(limit)
+        submissions = await db.contact_submissions.find(
+            query,
+            {"_id": 0, "id": 1, "name": 1, "email": 1, "subject": 1, "message": 1, "timestamp": 1, "status": 1}
+        ).sort("timestamp", -1).skip(skip).limit(limit).to_list(limit)
         
         return [ContactSubmission(**sub) for sub in submissions]
         
