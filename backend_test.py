@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend API Testing for Dr. Debora Jasmin's Portfolio Website
-Tests all API endpoints including health check, contact form, and admin endpoints
+Backend API Testing for NP-CDSS and Portfolio Website
+Tests all API endpoints including health check, contact form, admin endpoints, and CDSS prediction endpoints
 """
 
 import requests
