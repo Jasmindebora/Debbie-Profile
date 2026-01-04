@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Activity, AlertCircle, TrendingUp, Users } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
-import PatientForm from './cdss/PatientForm';
-import PredictionResults from './cdss/PredictionResults';
-import ModelPerformance from './cdss/ModelPerformance';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
+import PatientForm from './PatientForm';
+import PredictionResults from './PredictionResults';
+import ModelPerformance from './ModelPerformance';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
