@@ -1,0 +1,238 @@
+{
+  "icu_admission": {
+    "comparison": [
+      {
+        "model": "Random Forest",
+        "accuracy": 0.881875,
+        "precision": 0.8377192982456141,
+        "recall": 0.5568513119533528,
+        "specificity": 0.9705648369132857,
+        "f1_score": 0.6690017513134852,
+        "roc_auc": 0.9452465609496441
+      },
+      {
+        "model": "XGBoost",
+        "accuracy": 0.88625,
+        "precision": 0.746177370030581,
+        "recall": 0.7113702623906706,
+        "specificity": 0.933969769291965,
+        "f1_score": 0.7283582089552239,
+        "roc_auc": 0.9421154073630816
+      },
+      {
+        "model": "Decision Tree",
+        "accuracy": 0.86,
+        "precision": 0.7058823529411765,
+        "recall": 0.5947521865889213,
+        "specificity": 0.9323786793953859,
+        "f1_score": 0.6455696202531646,
+        "roc_auc": 0.889709173816134
+      },
+      {
+        "model": "SVM",
+        "accuracy": 0.841875,
+        "precision": 0.7163461538461539,
+        "recall": 0.43440233236151604,
+        "specificity": 0.9530628480509149,
+        "f1_score": 0.5408348457350273,
+        "roc_auc": 0.88024149311958
+      },
+      {
+        "model": "Naive Bayes",
+        "accuracy": 0.815625,
+        "precision": 0.5857142857142857,
+        "recall": 0.478134110787172,
+        "specificity": 0.9077167859984089,
+        "f1_score": 0.5264847512038523,
+        "roc_auc": 0.8612806186231738
+      },
+      {
+        "model": "Neural Network",
+        "accuracy": 0.815625,
+        "precision": 0.577922077922078,
+        "recall": 0.5189504373177842,
+        "specificity": 0.8965791567223548,
+        "f1_score": 0.5468509984639017,
+        "roc_auc": 0.8187595529176553
+      }
+    ],
+    "best_model": "Random Forest"
+  },
+  "intubation": {
+    "comparison": [
+      {
+        "model": "XGBoost",
+        "accuracy": 0.989375,
+        "precision": 0.5,
+        "recall": 0.11764705882352941,
+        "specificity": 0.9987365761212887,
+        "f1_score": 0.19047619047619047,
+        "roc_auc": 0.9587157667868158
+      },
+      {
+        "model": "Random Forest",
+        "accuracy": 0.989375,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 1.0,
+        "f1_score": 0.0,
+        "roc_auc": 0.9555943666158819
+      },
+      {
+        "model": "Naive Bayes",
+        "accuracy": 0.973125,
+        "precision": 0.09375,
+        "recall": 0.17647058823529413,
+        "specificity": 0.981680353758686,
+        "f1_score": 0.12244897959183673,
+        "roc_auc": 0.9250492363717439
+      },
+      {
+        "model": "SVM",
+        "accuracy": 0.989375,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 1.0,
+        "f1_score": 0.0,
+        "roc_auc": 0.8856972985024711
+      },
+      {
+        "model": "Neural Network",
+        "accuracy": 0.9875,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 0.998104864181933,
+        "f1_score": 0.0,
+        "roc_auc": 0.8530712348110439
+      },
+      {
+        "model": "Decision Tree",
+        "accuracy": 0.985625,
+        "precision": 0.36363636363636365,
+        "recall": 0.47058823529411764,
+        "specificity": 0.9911560328490209,
+        "f1_score": 0.41025641025641024,
+        "roc_auc": 0.8389877745159972
+      }
+    ],
+    "best_model": "XGBoost"
+  },
+  "cardiac_arrest": {
+    "comparison": [
+      {
+        "model": "XGBoost",
+        "accuracy": 0.97875,
+        "precision": 0.7777777777777778,
+        "recall": 0.1794871794871795,
+        "specificity": 0.9987187700192185,
+        "f1_score": 0.2916666666666667,
+        "roc_auc": 0.9334745971517273
+      },
+      {
+        "model": "Random Forest",
+        "accuracy": 0.975625,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 1.0,
+        "f1_score": 0.0,
+        "roc_auc": 0.9308957111647695
+      },
+      {
+        "model": "Naive Bayes",
+        "accuracy": 0.950625,
+        "precision": 0.08333333333333333,
+        "recall": 0.10256410256410256,
+        "specificity": 0.9718129404228059,
+        "f1_score": 0.09195402298850575,
+        "roc_auc": 0.8584240871236387
+      },
+      {
+        "model": "SVM",
+        "accuracy": 0.975625,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 1.0,
+        "f1_score": 0.0,
+        "roc_auc": 0.7944775702623236
+      },
+      {
+        "model": "Decision Tree",
+        "accuracy": 0.96625,
+        "precision": 0.2222222222222222,
+        "recall": 0.15384615384615385,
+        "specificity": 0.9865470852017937,
+        "f1_score": 0.18181818181818182,
+        "roc_auc": 0.7813367499466154
+      },
+      {
+        "model": "Neural Network",
+        "accuracy": 0.96625,
+        "precision": 0.10526315789473684,
+        "recall": 0.05128205128205128,
+        "specificity": 0.9891095451633568,
+        "f1_score": 0.06896551724137931,
+        "roc_auc": 0.7660112682534207
+      }
+    ],
+    "best_model": "XGBoost"
+  },
+  "inotropic_usage": {
+    "comparison": [
+      {
+        "model": "XGBoost",
+        "accuracy": 0.975,
+        "precision": 0.7142857142857143,
+        "recall": 0.21739130434782608,
+        "specificity": 0.9974259974259975,
+        "f1_score": 0.3333333333333333,
+        "roc_auc": 0.9554026075765207
+      },
+      {
+        "model": "Random Forest",
+        "accuracy": 0.971875,
+        "precision": 1.0,
+        "recall": 0.021739130434782608,
+        "specificity": 1.0,
+        "f1_score": 0.0425531914893617,
+        "roc_auc": 0.9552067595545857
+      },
+      {
+        "model": "Naive Bayes",
+        "accuracy": 0.959375,
+        "precision": 0.2682926829268293,
+        "recall": 0.2391304347826087,
+        "specificity": 0.9806949806949807,
+        "f1_score": 0.25287356321839083,
+        "roc_auc": 0.8737199932852107
+      },
+      {
+        "model": "SVM",
+        "accuracy": 0.97125,
+        "precision": 0.0,
+        "recall": 0.0,
+        "specificity": 1.0,
+        "f1_score": 0.0,
+        "roc_auc": 0.8665295730513122
+      },
+      {
+        "model": "Neural Network",
+        "accuracy": 0.965,
+        "precision": 0.32142857142857145,
+        "recall": 0.1956521739130435,
+        "specificity": 0.9877734877734877,
+        "f1_score": 0.24324324324324326,
+        "roc_auc": 0.8037602820211516
+      },
+      {
+        "model": "Decision Tree",
+        "accuracy": 0.96875,
+        "precision": 0.45,
+        "recall": 0.391304347826087,
+        "specificity": 0.9858429858429858,
+        "f1_score": 0.4186046511627907,
+        "roc_auc": 0.7944015444015445
+      }
+    ],
+    "best_model": "XGBoost"
+  }
+}
