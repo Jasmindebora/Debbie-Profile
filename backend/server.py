@@ -1,15 +1,19 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, status
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
 from typing import List
-import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 
+from models import (
+    ContactSubmissionCreate,
+    ContactSubmission,
+    ContactSubmissionResponse,
+    ErrorResponse
+)
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -20,62 +24,10 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # Create the main app without a prefix
-app = FastAPI()
+app = FastAPI(title="Dr. Debora Jasmin Portfolio API")
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
-
-
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
-
-# Include the router in the main app
-app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Configure logging
 logging.basicConfig(
@@ -84,6 +36,137 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Health check endpoint
+@api_router.get("/")
+async def root():
+    """Health check endpoint"""
+    return {
+        "message": "Dr. Debora Jasmin Portfolio API",
+        "status": "active",
+        "version": "1.0.0"
+    }
+
+# Contact form submission endpoint
+@api_router.post(
+    "/contact",
+    response_model=ContactSubmissionResponse,
+    status_code=status.HTTP_201_CREATED,
+    responses={
+        400: {"model": ErrorResponse, "description": "Invalid input data"},
+        500: {"model": ErrorResponse, "description": "Server error"}
+    }
+)
+async def submit_contact_form(submission: ContactSubmissionCreate):
+    """
+    Submit a contact form message.
+    
+    - **name**: Name of the person contacting (2-100 chars)
+    - **email**: Valid email address
+    - **subject**: Subject of the message (3-200 chars)
+    - **message**: Message content (10-2000 chars)
+    """
+    try:
+        # Create contact submission object
+        contact_data = ContactSubmission(
+            name=submission.name,
+            email=submission.email,
+            subject=submission.subject,
+            message=submission.message,
+            timestamp=datetime.utcnow(),
+            status="new"
+        )
+        
+        # Insert into database
+        result = await db.contact_submissions.insert_one(contact_data.dict())
+        
+        logger.info(f"Contact form submitted by {submission.email}")
+        
+        return ContactSubmissionResponse(
+            success=True,
+            message="Message sent successfully. Thank you for reaching out!",
+            id=contact_data.id
+        )
+        
+    except Exception as e:
+        logger.error(f"Error submitting contact form: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to submit contact form. Please try again later."
+        )
+
+# Get all contact submissions (admin endpoint)
+@api_router.get(
+    "/contact/submissions",
+    response_model=List[ContactSubmission]
+)
+async def get_contact_submissions(
+    limit: int = 50,
+    skip: int = 0,
+    status_filter: str = None
+):
+    """
+    Get all contact form submissions (Admin endpoint).
+    
+    - **limit**: Maximum number of submissions to return (default: 50)
+    - **skip**: Number of submissions to skip (default: 0)
+    - **status_filter**: Filter by status (new, read, replied)
+    """
+    try:
+        # Build query
+        query = {}
+        if status_filter:
+            query["status"] = status_filter
+        
+        # Fetch submissions
+        submissions = await db.contact_submissions.find(query) \
+            .sort("timestamp", -1) \
+            .skip(skip) \
+            .limit(limit) \
+            .to_list(limit)
+        
+        return [ContactSubmission(**sub) for sub in submissions]
+        
+    except Exception as e:
+        logger.error(f"Error fetching contact submissions: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch contact submissions"
+        )
+
+# Get contact submission count
+@api_router.get("/contact/count")
+async def get_contact_count():
+    """Get total count of contact submissions"""
+    try:
+        total = await db.contact_submissions.count_documents({})
+        new = await db.contact_submissions.count_documents({"status": "new"})
+        
+        return {
+            "total": total,
+            "new": new,
+            "read": total - new
+        }
+    except Exception as e:
+        logger.error(f"Error counting submissions: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to get submission count"
+        )
+
+# Include the router in the main app
+app.include_router(api_router)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    """Close database connection on shutdown"""
     client.close()
+    logger.info("Database connection closed")
