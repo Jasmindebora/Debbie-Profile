@@ -157,7 +157,7 @@ async def get_contact_count():
         )
 
 # NP-CDSS Prediction Endpoints
-@api_router.post("/cdss/predict", response_model=CDSSPredictionResponse)
+@api_router.post("/cdss/predict", response_model=CDSSPredictionResponse, status_code=status.HTTP_201_CREATED)
 async def predict_patient_outcomes(patient: PatientData):
     """
     Predict patient outcomes using ML models
