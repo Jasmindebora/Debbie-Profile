@@ -610,6 +610,35 @@ class BackendTester:
         print("\n6. Testing Database Storage...")
         self.verify_database_storage(submission_id)
         
+        # CDSS Tests
+        print("\n" + "=" * 60)
+        print("STARTING NP-CDSS PREDICTION TESTS")
+        print("=" * 60)
+        
+        # Test 7: CDSS High-Risk Patient Prediction
+        print("\n7. Testing CDSS High-Risk Patient Prediction...")
+        patient_id = self.test_cdss_predict_high_risk_patient()
+        
+        # Test 8: CDSS Low-Risk Patient Prediction
+        print("\n8. Testing CDSS Low-Risk Patient Prediction...")
+        self.test_cdss_predict_low_risk_patient()
+        
+        # Test 9: CDSS Invalid Data Validation
+        print("\n9. Testing CDSS Invalid Data Validation...")
+        self.test_cdss_predict_invalid_data()
+        
+        # Test 10: CDSS Model Performance
+        print("\n10. Testing CDSS Model Performance...")
+        self.test_cdss_model_performance()
+        
+        # Test 11: CDSS Statistics
+        print("\n11. Testing CDSS Statistics...")
+        self.test_cdss_statistics()
+        
+        # Test 12: CDSS Database Storage Verification
+        print("\n12. Testing CDSS Database Storage...")
+        self.verify_cdss_database_storage(patient_id)
+        
         # Print summary
         self.print_summary()
     
