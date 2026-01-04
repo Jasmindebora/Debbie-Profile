@@ -149,9 +149,9 @@ const Contact = ({ data }) => {
                 />
               </div>
               
-              <Button type="submit" className="btn-primary w-full">
+              <Button type="submit" className="btn-primary w-full" disabled={isSubmitting}>
                 <Send className="w-4 h-4 mr-2" />
-                Send Message
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </Button>
             </form>
           </div>
